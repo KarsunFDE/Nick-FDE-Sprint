@@ -1,0 +1,14 @@
+SCAFFOLD-NOTES.md
+
+# Backend
+backend/target/
+*.class
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
