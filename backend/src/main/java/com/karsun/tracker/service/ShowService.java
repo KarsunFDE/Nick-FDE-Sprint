@@ -1,7 +1,12 @@
 package com.karsun.tracker.service;
 
+import com.karsun.tracker.dto.EpisodeResponse;
+import com.karsun.tracker.dto.SeasonResponse;
 import com.karsun.tracker.dto.ShowRequest;
+import com.karsun.tracker.dto.ShowResponse;
+import com.karsun.tracker.entity.Episode;
 import com.karsun.tracker.entity.Genre;
+import com.karsun.tracker.entity.Season;
 import com.karsun.tracker.entity.Show;
 import com.karsun.tracker.repository.GenreRepository;
 import com.karsun.tracker.repository.ShowRepository;
@@ -23,30 +28,37 @@ public class ShowService {
         this.genreRepository = genreRepository;
     }
 
-    public List<Show> getAllShows() {
-        return showRepository.findAll();
+    public List<ShowResponse> getAllShows() {
+        return showRepository.findAll()
+                .stream()
+                .map(this::toShowResponse)
+                .toList();
     }
 
-    public Show getShow(Long id) {
-        return showRepository.findById(id)
+    public ShowResponse getShow(Long id) {
+        Show show = showRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Show not found: " + id));
+        return toShowResponse(show);
     }
 
-    public Show createShow(ShowRequest request) {
+    public ShowResponse createShow(ShowRequest request) {
         Show show = new Show();
         show.setTitle(request.getTitle());
         show.setDescription(request.getDescription());
         show.setCreatedAt(Instant.now());
         show.setGenres(resolveGenres(request.getGenreIds()));
-        return showRepository.save(show);
+        Show saved = showRepository.save(show);
+        return toShowResponse(saved);
     }
 
-    public Show updateShow(Long id, ShowRequest request) {
-        Show show = getShow(id);
+    public ShowResponse updateShow(Long id, ShowRequest request) {
+        Show show = showRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Show not found: " + id));
         show.setTitle(request.getTitle());
         show.setDescription(request.getDescription());
         show.setGenres(resolveGenres(request.getGenreIds()));
-        return showRepository.save(show);
+        Show saved = showRepository.save(show);
+        return toShowResponse(saved);
     }
 
     public void deleteShow(Long id) {
@@ -58,5 +70,35 @@ public class ShowService {
             return new HashSet<>();
         }
         return new HashSet<>(genreRepository.findByIdIn(genreIds));
+    }
+
+    private ShowResponse toShowResponse(Show show) {
+        return new ShowResponse(
+                show.getId(),
+                show.getTitle(),
+                show.getDescription(),
+                show.getCreatedAt(),
+                show.getGenres().stream().toList(),
+                show.getSeasons().stream().map(this::toSeasonResponse).toList()
+        );
+    }
+
+    private SeasonResponse toSeasonResponse(Season season) {
+        return new SeasonResponse(
+                season.getId(),
+                season.getSeasonNumber(),
+                season.getTitle(),
+                season.getEpisodes().stream().map(this::toEpisodeResponse).toList()
+        );
+    }
+
+    private EpisodeResponse toEpisodeResponse(Episode episode) {
+        return new EpisodeResponse(
+                episode.getId(),
+                episode.getEpisodeNumber(),
+                episode.getTitle(),
+                episode.getStatus().name(),
+                episode.getWatchedAt()
+        );
     }
 }

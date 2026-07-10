@@ -1,7 +1,7 @@
 package com.karsun.tracker.controller;
 
 import com.karsun.tracker.dto.ShowRequest;
-import com.karsun.tracker.entity.Show;
+import com.karsun.tracker.dto.ShowResponse;
 import com.karsun.tracker.service.ShowService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +20,23 @@ public class ShowController {
     }
 
     @GetMapping
-    public List<Show> getAllShows() {
+    public List<ShowResponse> getAllShows() {
         return showService.getAllShows();
     }
 
     @GetMapping("/{id}")
-    public Show getShow(@PathVariable Long id) {
+    public ShowResponse getShow(@PathVariable Long id) {
         return showService.getShow(id);
     }
 
     @PostMapping
-    public ResponseEntity<Show> createShow(@Valid @RequestBody ShowRequest request) {
-        Show created = showService.createShow(request);
+    public ResponseEntity<ShowResponse> createShow(@Valid @RequestBody ShowRequest request) {
+        ShowResponse created = showService.createShow(request);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Show> updateShow(@PathVariable Long id, @Valid @RequestBody ShowRequest request) {
+    public ResponseEntity<ShowResponse> updateShow(@PathVariable Long id, @Valid @RequestBody ShowRequest request) {
         return ResponseEntity.ok(showService.updateShow(id, request));
     }
 
